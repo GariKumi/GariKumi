@@ -1,0 +1,905 @@
+<html><head><base href="/" />
+<style>
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Racing Sans One', cursive;
+  }
+
+  body {
+    background: linear-gradient(135deg, #1a1a2e, #16213e);
+    color: #fff;
+    overflow-x: hidden;
+  }
+
+  /* Particle Background */
+  .particle {
+    position: fixed;
+    background: rgba(255, 215, 0, 0.3);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Navigation Tabs */
+  .nav-tabs {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    padding: 1rem 0;
+    z-index: 1000;
+    backdrop-filter: blur(5px);
+  }
+
+  .nav-tabs button {
+    background: transparent;
+    border: none;
+    color: #fff;
+    padding: 0.5rem 1.5rem;
+    margin: 0 1rem;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    position: relative;
+  }
+
+  .nav-tabs button::after {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    left: 0;
+    width: 0;
+    height: 3px;
+    background: linear-gradient(45deg, #ffd700, #ff8c00);
+    transition: width 0.3s;
+  }
+
+  .nav-tabs button:hover::after,
+  .nav-tabs button.active::after {
+    width: 100%;
+  }
+
+  /* Content Sections */
+  .content-section {
+    display: none;
+    padding: 100px 20px 20px;
+    min-height: 100vh;
+  }
+
+  .content-section.active {
+    display: block;
+  }
+
+  /* Stats Grid */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+    padding: 2rem;
+  }
+
+  .stat-card {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    padding: 1.5rem;
+    text-align: center;
+    backdrop-filter: blur(5px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.3s ease;
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.1);
+  }
+
+  .stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0 25px rgba(255, 215, 0, 0.3);
+  }
+
+  .jackpot-counter {
+    font-size: 3rem;
+    color: #ffd700;
+    text-shadow: 0 0 10px #ff8c00;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+  }
+
+  /* Existing styles */
+  .hero {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .road {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: 100px;
+    background: #333;
+    transform: perspective(500px) rotateX(60deg);
+    background-image: 
+      repeating-linear-gradient(90deg, 
+        transparent 0, 
+        transparent 48%, 
+        #fff 48%, 
+        #fff 52%);
+    animation: roadMove 1s linear infinite;
+  }
+
+  @keyframes roadMove {
+    from { background-position: 0 0; }
+    to { background-position: 50px 0; }
+  }
+
+  .car {
+    position: absolute;
+    bottom: 20%;
+    left: 50%;
+    transform: translateX(-50%);
+    animation: carHover 2s ease-in-out infinite;
+  }
+
+  .car::after {
+    content: '';
+    position: absolute;
+    left: -10px;
+    bottom: 45px;
+    width: 15px;
+    height: 4px;
+    background: #ff8c00;
+    filter: blur(2px);
+    animation: exhaust 0.2s infinite;
+  }
+
+  @keyframes exhaust {
+    0% { opacity: 0.8; transform: translateX(0); }
+    100% { opacity: 0; transform: translateX(-20px); }
+  }
+
+  @keyframes carHover {
+    0%, 100% { transform: translateX(-50%) translateY(0); }
+    50% { transform: translateX(-50%) translateY(-10px); }
+  }
+
+  .title {
+    font-size: 4rem;
+    text-align: center;
+    margin-bottom: 2rem;
+    text-shadow: 0 0 10px #ffd700;
+    z-index: 1;
+    animation: titleGlow 3s infinite;
+  }
+
+  @keyframes titleGlow {
+    0%, 100% { text-shadow: 0 0 10px #ffd700; }
+    50% { text-shadow: 0 0 30px #ffd700, 0 0 60px #ff8c00; }
+  }
+
+  .subtitle {
+    font-size: 1.5rem;
+    text-align: center;
+    max-width: 800px;
+    margin: 0 auto 2rem;
+    z-index: 1;
+  }
+
+  .cta-button {
+    padding: 1rem 2rem;
+    font-size: 1.5rem;
+    background: linear-gradient(45deg, #ffd700, #ff8c00);
+    border: none;
+    border-radius: 50px;
+    color: #000;
+    cursor: pointer;
+    transition: transform 0.3s, box-shadow 0.3s;
+    z-index: 1;
+  }
+
+  .cta-button:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 20px #ffd700;
+  }
+
+  .coins {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+  }
+
+  .jackpot-section {
+    padding: 2rem;
+    text-align: center;
+  }
+
+  .team-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    padding: 2rem;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  .team-card {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    padding: 1.5rem;
+    backdrop-filter: blur(5px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: transform 0.3s ease;
+  }
+
+  .team-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(255, 215, 0, 0.3);
+  }
+
+  .team-number {
+    font-size: 1.5rem;
+    color: #ffd700;
+    margin-bottom: 1rem;
+  }
+
+  .team-status {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    background: linear-gradient(45deg, #ffd700, #ff8c00);
+    color: #000;
+    font-weight: bold;
+    margin-top: 1rem;
+  }
+
+  .mega-jackpot {
+    font-size: 4rem;
+    color: #ffd700;
+    text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+    margin: 2rem 0;
+    animation: jackpotPulse 2s infinite;
+  }
+
+  @keyframes jackpotPulse {
+    0% { transform: scale(1); text-shadow: 0 0 20px rgba(255, 215, 0, 0.5); }
+    50% { transform: scale(1.05); text-shadow: 0 0 40px rgba(255, 215, 0, 0.8); }
+    100% { transform: scale(1); text-shadow: 0 0 20px rgba(255, 215, 0, 0.5); }
+  }
+
+  .coin {
+    box-shadow: 0 0 10px #ffd700;
+    animation: coinSpin 2s infinite linear;
+  }
+
+  @keyframes coinSpin {
+    from { transform: rotate(0deg) scale(1); }
+    50% { transform: rotate(180deg) scale(1.2); }
+    to { transform: rotate(360deg) scale(1); }
+  }
+
+  /* Add this to the existing CSS */
+  .footer {
+    background: rgba(0, 0, 0, 0.8);
+    padding: 2rem 0;
+    margin-top: 2rem;
+    backdrop-filter: blur(5px);
+    border-top: 1px solid rgba(255, 215, 0, 0.3);
+  }
+
+  .footer-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 2rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .footer-links {
+    display: flex;
+    gap: 2rem;
+  }
+
+  .footer-links a {
+    color: #ffd700;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    position: relative;
+  }
+
+  .footer-links a::after {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: linear-gradient(45deg, #ffd700, #ff8c00);
+    transition: width 0.3s;
+  }
+
+  .footer-links a:hover::after {
+    width: 100%;
+  }
+
+  .footer-copyright {
+    color: #fff;
+    opacity: 0.8;
+  }
+
+  /* Add to existing CSS */
+  .play-now-btn {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    padding: 1.2rem 2.5rem;
+    font-size: 1.8rem;
+    background: linear-gradient(45deg, #ff4d4d, #ff8c00);
+    border: none;
+    border-radius: 50px;
+    color: #fff;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    z-index: 1000;
+    box-shadow: 0 5px 15px rgba(255, 77, 77, 0.4);
+    animation: pulsePlay 2s infinite;
+  }
+
+  .play-now-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 5px 25px rgba(255, 77, 77, 0.6);
+  }
+
+  @keyframes pulsePlay {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+  }
+
+  .live-winners {
+    max-width: 800px;
+    margin: 2rem auto;
+    padding: 1rem;
+  }
+
+  .live-win-entry {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    padding: 1rem;
+    margin: 0.5rem 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    animation: slideIn 0.5s ease-out;
+    backdrop-filter: blur(5px);
+    border: 1px solid rgba(255, 215, 0, 0.2);
+  }
+
+  .live-win-entry.new {
+    animation: newWin 2s ease-out;
+  }
+
+  @keyframes slideIn {
+    from { transform: translateX(-100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+  }
+
+  @keyframes newWin {
+    0% { background: rgba(255, 215, 0, 0.3); }
+    100% { background: rgba(255, 255, 255, 0.1); }
+  }
+
+  .win-time {
+    color: #ffd700;
+    font-size: 0.9rem;
+  }
+
+  .win-amount {
+    color: #ff8c00;
+    font-weight: bold;
+  }
+
+  /* Responsive CSS */
+  @media (max-width: 768px) {
+    .nav-tabs {
+      flex-wrap: wrap;
+      padding: 0.5rem;
+    }
+
+    .nav-tabs button {
+      font-size: 1rem;
+      padding: 0.3rem 1rem;
+      margin: 0.2rem;
+    }
+
+    .title {
+      font-size: 2.5rem;
+    }
+
+    .subtitle {
+      font-size: 1.2rem;
+      padding: 0 1rem;
+    }
+
+    .stats-grid {
+      grid-template-columns: 1fr;
+      padding: 1rem;
+    }
+
+    .team-grid {
+      grid-template-columns: 1fr;
+      padding: 1rem;
+    }
+
+    .footer-content {
+      flex-direction: column;
+      text-align: center;
+    }
+
+    .footer-links {
+      flex-direction: column;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .mega-jackpot {
+      font-size: 2.5rem;
+    }
+
+    .play-now-btn {
+      font-size: 1.4rem;
+      padding: 1rem 2rem;
+      bottom: 20px;
+      right: 20px;
+    }
+
+    .live-win-entry {
+      flex-direction: column;
+      text-align: center;
+      gap: 0.5rem;
+    }
+
+    .hero {
+      padding: 1rem;
+    }
+
+    .car {
+      transform: scale(0.8);
+    }
+
+    .cta-button {
+      font-size: 1.2rem;
+      padding: 0.8rem 1.6rem;
+    }
+  }
+
+  /* Add styles for very small screens */
+  @media (max-width: 480px) {
+    .title {
+      font-size: 2rem;
+    }
+
+    .nav-tabs button {
+      font-size: 0.9rem;
+      padding: 0.2rem 0.8rem;
+    }
+
+    .play-now-btn {
+      font-size: 1.2rem;
+      padding: 0.8rem 1.6rem;
+    }
+
+    .stat-card, .team-card {
+      padding: 1rem;
+    }
+  }
+
+  /* Improve base responsive behavior */
+  .content-section {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 100px 1rem 20px;
+  }
+
+  /* Make images and SVGs responsive */
+  img, svg {
+    max-width: 100%;
+    height: auto;
+  }
+</style>
+<link href="https://fonts.googleapis.com/css2?family=Racing+Sans+One&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<nav class="nav-tabs">
+  <button class="tab-btn active" data-tab="home">Home</button>
+  <button class="tab-btn" data-tab="about">About</button>
+  <button class="tab-btn" data-tab="winners">Weekly Winners</button>
+  <button class="tab-btn" data-tab="stats">Hourly Stats</button>
+  <button class="tab-btn" data-tab="jackpot">Jackpot</button>
+</nav>
+
+<div id="home" class="content-section active">
+  <div class="hero">
+    <div class="road"></div>
+    <svg class="car" width="100" height="60" viewBox="0 0 100 60">
+      <path d="M10,40 L20,20 L80,20 L90,40 Z" fill="#ff4d4d"/>
+      <rect x="0" y="40" width="100" height="10" fill="#ff4d4d"/>
+      <circle cx="25" cy="50" r="8" fill="#333"/>
+      <circle cx="75" cy="50" r="8" fill="#333"/>
+      <rect x="30" y="25" width="40" height="15" fill="#87CEEB"/>
+    </svg>
+    <h1 class="title">GariKumi</h1>
+    <p class="subtitle">The Most Thrilling Ride to Big Wins! Collect coins as you skillfully dodge cars and race your way to exciting rewards.</p>
+    <button class="cta-button">START YOUR RIDE NOW!</button>
+    <div class="coins" id="coinContainer"></div>
+  </div>
+</div>
+
+<div id="about" class="content-section">
+  <h2 class="title">About GariKumi</h2>
+  <p class="subtitle">GariKumi is the ultimate racing experience where skill meets fortune. Our innovative platform combines the thrill of racing with the excitement of winning big. Every hour brings new opportunities to claim amazing rewards!</p>
+</div>
+
+<div id="winners" class="content-section">
+  <h2 class="title">Recent Live Wins</h2>
+  <div class="live-winners" id="liveWinnersList">
+    <!-- Live winners will be populated here -->
+  </div>
+
+  <h2 class="title">Weekly Top Winners</h2>
+  <div class="stats-grid">
+    <div class="stat-card">
+      <h3>🥇 First Place</h3>
+      <p>KMN***234</p>
+      <p>KSh 100,000</p>
+    </div>
+    <div class="stat-card">
+      <h3>🥈 Second Place</h3>
+      <p>WPL***567</p>
+      <p>KSh 50,000</p>
+    </div>
+    <div class="stat-card">
+      <h3>🥉 Third Place</h3>
+      <p>BGT***890</p>
+      <p>KSh 25,000</p>
+    </div>
+  </div>
+</div>
+
+<div id="stats" class="content-section">
+  <h2 class="title">Hourly Statistics</h2>
+  <div class="stats-grid">
+    <div class="stat-card">
+      <h3>Current Hour</h3>
+      <p>Active Players: <span id="currentPlayers">1,234</span></p>
+      <p>Total Wins: <span id="currentWins">KSh 50,000</span></p>
+    </div>
+    <div class="stat-card">
+      <h3>Previous Hour</h3>
+      <p>Total Games: <span id="previousGames">5,678</span></p>
+      <p>Biggest Win: <span id="biggestWin">KSh 10,000</span></p>
+    </div>
+  </div>
+</div>
+
+<div id="jackpot" class="content-section">
+  <div class="jackpot-section">
+    <h2 class="title">Mega Jackpot Challenge</h2>
+    <div class="mega-jackpot">KSh 48,656,757</div>
+    <p class="subtitle">13 Lucky Teams Competing for the Grand Prize!</p>
+    
+    <div class="team-grid">
+      <div class="team-card">
+        <div class="team-number">Team 1</div>
+        <p>Current Status: Qualified</p>
+        <span class="team-status">In Play</span>
+      </div>
+      <div class="team-card">
+        <div class="team-number">Team 2</div>
+        <p>Current Status: Qualified</p>
+        <span class="team-status">In Play</span>
+      </div>
+      <div class="team-card">
+        <div class="team-number">Team 3</div>
+        <p>Current Status: Qualified</p>
+        <span class="team-status">In Play</span>
+      </div>
+      <div class="team-card">
+        <div class="team-number">Team 4</div>
+        <p>Current Status: Qualified</p>
+        <span class="team-status">In Play</span>
+      </div>
+      <div class="team-card">
+        <div class="team-number">Team 5</div>
+        <p>Current Status: Qualified</p>
+        <span class="team-status">In Play</span>
+      </div>
+      <div class="team-card">
+        <div class="team-number">Team 6</div>
+        <p>Current Status: Qualified</p>
+        <span class="team-status">In Play</span>
+      </div>
+      <div class="team-card">
+        <div class="team-number">Team 7</div>
+        <p>Current Status: Qualified</p>
+        <span class="team-status">In Play</span>
+      </div>
+      <div class="team-card">
+        <div class="team-number">Team 8</div>
+        <p>Current Status: Qualified</p>
+        <span class="team-status">In Play</span>
+      </div>
+      <div class="team-card">
+        <div class="team-number">Team 9</div>
+        <p>Current Status: Qualified</p>
+        <span class="team-status">In Play</span>
+      </div>
+      <div class="team-card">
+        <div class="team-number">Team 10</div>
+        <p>Current Status: Qualified</p>
+        <span class="team-status">In Play</span>
+      </div>
+      <div class="team-card">
+        <div class="team-number">Team 11</div>
+        <p>Current Status: Qualified</p>
+        <span class="team-status">In Play</span>
+      </div>
+      <div class="team-card">
+        <div class="team-number">Team 12</div>
+        <p>Current Status: Qualified</p>
+        <span class="team-status">In Play</span>
+      </div>
+      <div class="team-card">
+        <div class="team-number">Team 13</div>
+        <p>Current Status: Qualified</p>
+        <span class="team-status">In Play</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="footer-content">
+    <div class="footer-copyright">
+      © 2024 GariKumi. All rights reserved.
+    </div>
+    <div class="footer-links">
+      <a href="https://garikumi.com/privacy">Privacy Policy</a>
+      <a href="https://garikumi.com/terms">Terms & Conditions</a>
+      <a href="https://garikumi.com/responsible-gaming">Responsible Gaming</a>
+    </div>
+  </div>
+</footer>
+
+<button class="play-now-btn">PLAY NOW! 🎮</button>
+
+<script>
+// Particle Background
+function createParticle() {
+  const particle = document.createElement('div');
+  particle.className = 'particle';
+  const size = Math.random() * 5 + 2;
+  particle.style.width = `${size}px`;
+  particle.style.height = `${size}px`;
+  particle.style.left = `${Math.random() * 100}vw`;
+  particle.style.top = `${Math.random() * 100}vh`;
+  particle.style.opacity = Math.random() * 0.5 + 0.2;
+  document.body.appendChild(particle);
+  
+  const animation = particle.animate([
+    { transform: 'translate(0, 0)' },
+    { transform: `translate(${Math.random() * 200 - 100}px, ${Math.random() * 200 - 100}px)` }
+  ], {
+    duration: Math.random() * 3000 + 2000,
+    iterations: Infinity,
+    direction: 'alternate',
+    easing: 'ease-in-out'
+  });
+  
+  return particle;
+}
+
+// Create initial particles
+for (let i = 0; i < 50; i++) {
+  createParticle();
+}
+
+// Tab Navigation
+document.querySelectorAll('.tab-btn').forEach(button => {
+  button.addEventListener('click', () => {
+    // Remove active class from all buttons and sections
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelectorAll('.content-section').forEach(section => section.classList.remove('active'));
+    
+    // Add active class to clicked button and corresponding section
+    button.classList.add('active');
+    document.getElementById(button.dataset.tab).classList.add('active');
+  });
+});
+
+// Coin Animation
+function createCoin() {
+  const coin = document.createElement('div');
+  coin.className = 'coin';
+  coin.style.position = 'absolute';
+  coin.style.width = '20px';
+  coin.style.height = '20px';
+  coin.style.backgroundColor = '#ffd700';
+  coin.style.borderRadius = '50%';
+  coin.style.left = Math.random() * 100 + '%';
+  coin.style.top = -20 + 'px';
+  coin.style.animation = `fallDown ${Math.random() * 2 + 3}s linear`;
+  coin.style.boxShadow = '0 0 10px #ffd700';
+  coin.style.background = 'radial-gradient(circle at 30% 30%, #ffd700, #ff8c00)';
+  
+  const container = document.getElementById('coinContainer');
+  container.appendChild(coin);
+  
+  coin.addEventListener('animationend', () => {
+    coin.remove();
+  });
+}
+
+setInterval(createCoin, 500);
+
+const style = document.createElement('style');
+style.textContent = `
+  @keyframes fallDown {
+    from { transform: translateY(0) rotate(0deg); }
+    to { transform: translateY(100vh) rotate(360deg); }
+  }
+`;
+document.head.appendChild(style);
+
+document.querySelector('.cta-button').addEventListener('click', () => {
+  alert('Get ready for the ride of your life! 🚗💨');
+});
+
+// Play Now button functionality
+document.querySelector('.play-now-btn').addEventListener('click', () => {
+  alert('Starting game... Get ready to race! 🏎️');
+  // Add actual game start logic here
+});
+
+// Update currency format for all monetary values
+document.querySelectorAll('.stat-card').forEach(card => {
+  const text = card.innerHTML;
+  card.innerHTML = text.replace(/₹/g, 'KSh ');
+});
+
+// Update jackpot counter with KSh
+setInterval(() => {
+  const jackpotElement = document.querySelector('.mega-jackpot');
+  const currentAmount = parseInt(jackpotElement.textContent.replace(/[^0-9]/g, ''));
+  const newAmount = currentAmount + Math.floor(Math.random() * 1000);
+  jackpotElement.textContent = 'KSh ' + newAmount.toLocaleString();
+}, 5000);
+
+// Update the updateHourlyStats function
+function updateHourlyStats() {
+  // Only randomize active players and total games
+  const activePlayers = Math.floor(Math.random() * 3000 + 500);
+  const totalGames = Math.floor(Math.random() * 8000 + 2000);
+  
+  // Fixed values for wins
+  const totalWins = 2060780;  // Fixed at KSh 2,060,780
+  const bigWin = 233045;      // Fixed at KSh 233,045
+  
+  document.getElementById('currentPlayers').textContent = activePlayers.toLocaleString();
+  document.getElementById('currentWins').textContent = `KSh ${totalWins.toLocaleString()}`;
+  document.getElementById('previousGames').textContent = totalGames.toLocaleString();
+  document.getElementById('biggestWin').textContent = `KSh ${bigWin.toLocaleString()}`;
+}
+
+// Update stats every 5 seconds
+setInterval(updateHourlyStats, 5000);
+
+// Initial update
+updateHourlyStats();
+
+// Add hover glow effect to buttons
+document.querySelectorAll('button').forEach(button => {
+  button.addEventListener('mouseover', () => {
+    button.style.boxShadow = '0 0 20px rgba(255, 215, 0, 0.5)';
+  });
+  
+  button.addEventListener('mouseout', () => {
+    button.style.boxShadow = 'none';
+  });
+});
+
+// Add hover effect for team cards
+document.querySelectorAll('.team-card').forEach(card => {
+  card.addEventListener('mouseenter', () => {
+    card.style.transform = 'translateY(-10px)';
+  });
+  
+  card.addEventListener('mouseleave', () => {
+    card.style.transform = 'translateY(0)';
+  });
+});
+
+// Add smooth hover effect for footer links
+document.querySelectorAll('.footer-links a').forEach(link => {
+  link.addEventListener('mouseover', () => {
+    link.style.textShadow = '0 0 10px rgba(255, 215, 0, 0.5)';
+    link.style.color = '#fff';
+  });
+  
+  link.addEventListener('mouseout', () => {
+    link.style.textShadow = 'none';
+    link.style.color = '#ffd700';
+  });
+});
+
+// Replace the existing playerNames array and add this function
+function generateRandomUsername() {
+    const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    const prefix = Array(3).fill().map(() => letters[Math.floor(Math.random() * letters.length)]).join('');
+    const suffix = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+    return `${prefix}***${suffix}`;
+}
+
+// Update the generateWin function
+function generateWin() {
+    const player = generateRandomUsername();
+    const city = cities[Math.floor(Math.random() * cities.length)];
+    const amount = Math.floor(Math.random() * 9000 + 1000);
+    const time = new Date().toLocaleTimeString();
+    
+    return { player, city, amount, time };
+}
+
+const cities = ['Nairobi', 'Mombasa', 'Kisumu', 'Nakuru', 'Eldoret', 'Thika', 'Kitale', 'Malindi'];
+
+function addWinEntry(win) {
+  const winnersList = document.getElementById('liveWinnersList');
+  const entry = document.createElement('div');
+  entry.className = 'live-win-entry new';
+  entry.innerHTML = `
+    <span class="win-player">${win.player} from ${win.city}</span>
+    <span class="win-amount">KSh ${win.amount.toLocaleString()}</span>
+    <span class="win-time">${win.time}</span>
+  `;
+  
+  // Keep only the last 10 entries
+  if (winnersList.children.length >= 10) {
+    winnersList.removeChild(winnersList.lastChild);
+  }
+  
+  winnersList.insertBefore(entry, winnersList.firstChild);
+  
+  // Remove new animation class after animation completes
+  setTimeout(() => {
+    entry.classList.remove('new');
+  }, 2000);
+}
+
+// Generate initial wins
+for (let i = 0; i < 10; i++) {
+  addWinEntry(generateWin());
+}
+
+// Add new wins periodically
+setInterval(() => {
+  addWinEntry(generateWin());
+}, 3000);
+</script>
+
+</body>
+</html>
